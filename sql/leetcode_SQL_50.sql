@@ -1407,3 +1407,57 @@ WITH data AS (
 SELECT project_id, ROUND(totalexp/totalcount:: NUMERIC, 2) AS average_years
 FROM data
 WHERE project_id IS NOT NULL;
+
+/*  Hacker Rank Medium Diff Question */
+/*
+Generate the following two result sets:
+Query an alphabetically ordered list of all names in OCCUPATIONS, immediately followed by the first letter of each profession as a parenthetical (i.e.: enclosed in parentheses). For example: AnActorName(A), ADoctorName(D), AProfessorName(P), and ASingerName(S).
+Query the number of ocurrences of each occupation in OCCUPATIONS. Sort the occurrences in ascending order, and output them in the following format:
+There are a total of [occupation_count] [occupation]s.
+where [occupation_count] is the number of occurrences of an occupation in OCCUPATIONS and [occupation] is the lowercase occupation name. If more than one Occupation has the same [occupation_count], they should be ordered alphabetically.
+
+'''
+Sample Output
+Ashely(P)
+Christeen(P)
+Jane(A)
+Jenny(D)
+Julia(A)
+Ketty(P)
+Maria(A)
+Meera(S)
+Priya(S)
+Samantha(D)
+There are a total of 2 doctors.
+There are a total of 2 singers.
+There are a total of 3 actors.
+There are a total of 3 professors.
+
+'''
+Explanation
+The results of the first query are formatted to the problem description's specifications.
+The results of the second query are ascendingly ordered first by number of names corresponding to each profession (2 <= 2<=3<=3), 
+and then alphabetically by profession (doctor <= singer, and actor <= professor).
+ */
+
+WITH cte AS (
+    -- Query to get the formatted names with the first letter of the occupation -- THIS IS FIRST QUERY
+    SELECT CONCAT(NAME, '(', SUBSTR(OCCUPATION, 1, 1), ')') AS result, NAME
+    FROM OCCUPATIONS
+),
+nd_cte AS (
+    -- Query to get the count of each occupation-- THIS IS SECOND SUB QUERY.
+    SELECT CONCAT('There are a total of ', COUNT(*), ' ', LOWER(OCCUPATION), 's.') AS result, NULL AS NAME -- NAME CANNOT BE GROUPED BY OCCUPATION THUS IT IS NULL.
+    FROM OCCUPATIONS
+    GROUP BY OCCUPATION
+)
+
+-- Union the two result sets together, ordering the final result set
+SELECT result 
+FROM (
+    SELECT result, NAME FROM cte
+    UNION ALL
+    SELECT result, NAME FROM nd_cte
+) AS final_result
+-- Order by name for non-null names, and fallback to 'Z' for null names to ensure occupation counts appear last
+ORDER BY COALESCE(NAME, 'Z'), result ASC;
